@@ -36,7 +36,7 @@ CGEventRef myCGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef
   events[i] = type;
   i = NEXT_M3(i);
 #undef PREV_M3
-#undef PREV_M3
+#undef NEXT_M3
 
   return event;
 }
