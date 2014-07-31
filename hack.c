@@ -9,18 +9,12 @@
 
 CGEventMask eventMask = (1 << kCGEventOtherMouseUp) | (1 << kCGEventOtherMouseDown) | (1 << kCGEventScrollWheel);
 
-// My own custom for ThinkPad keyboard. Reverse scrolling and suppress mouse center button before scrolling.
+// My own custom for ThinkPad keyboard. Suppress mouse center button before scrolling.
 CGEventRef myCGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
   if (!((1 << type) & eventMask)) {
     return event;
   }
-  if (type == kCGEventScrollWheel) {
-#define REVERSE(field) CGEventSetIntegerValueField(event, field, -CGEventGetIntegerValueField(event, field))
-    REVERSE(kCGScrollWheelEventFixedPtDeltaAxis1);
-    REVERSE(kCGScrollWheelEventFixedPtDeltaAxis2);
-    REVERSE(kCGScrollWheelEventFixedPtDeltaAxis3);
-#undef REVERSE
-  } else if (CGEventGetIntegerValueField(event, kCGMouseEventButtonNumber) != kCGMouseButtonCenter) {
+  if (type != kCGEventScrollWheel && CGEventGetIntegerValueField(event, kCGMouseEventButtonNumber) != kCGMouseButtonCenter) {
     return event;
   }
 
