@@ -11,21 +11,13 @@ CGEventMask eventMask = (1 << kCGEventOtherMouseUp) | (1 << kCGEventOtherMouseDo
 
 // My own custom for ThinkPad keyboard. Suppress mouse center button before scrolling.
 CGEventRef myCGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
-  if (!((1 << type) & eventMask)) {
-    return event;
-  }
-  if (type != kCGEventScrollWheel && CGEventGetIntegerValueField(event, kCGMouseEventButtonNumber) != kCGMouseButtonCenter) {
-    return event;
-  }
-
   static int last_down = 0;
   if (type == kCGEventScrollWheel) {
       last_down = 0;
-      return event;
-  } else if (type == kCGEventOtherMouseDown) {
+  } else if (type == kCGEventOtherMouseDown && CGEventGetIntegerValueField(event, kCGMouseEventButtonNumber) == kCGMouseButtonCenter) {
       last_down = 1;
       return NULL;
-  } else if (type == kCGEventOtherMouseUp) {
+  } else if (type == kCGEventOtherMouseUp && CGEventGetIntegerValueField(event, kCGMouseEventButtonNumber) == kCGMouseButtonCenter) {
       if (!last_down) {
 	  return NULL;
       } else {
@@ -34,7 +26,6 @@ CGEventRef myCGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef
 	  CGEventSetType(e, kCGEventOtherMouseDown);
 	  CGEventTapPostEvent(proxy, e);
 	  CFRelease(e);
-	  return event;
       }
   }
   return event;
