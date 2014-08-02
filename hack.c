@@ -18,20 +18,25 @@ CGEventRef myCGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef
     return event;
   }
 
-  static CGEventType events[3];
-  static int i = 0;
-#define NEXT_M3(i) ((i + 1) % 3)
-#define PREV_M3(i) ((i + 2) % 3)
-  if (events[PREV_M3(PREV_M3(i))] == kCGEventOtherMouseDown &&
-      events[PREV_M3(i)] == kCGEventScrollWheel &&
-      type == kCGEventOtherMouseUp) {
-    return NULL;
+  static int last_down = 0;
+  if (type == kCGEventScrollWheel) {
+      last_down = 0;
+      return event;
+  } else if (type == kCGEventOtherMouseDown) {
+      last_down = 1;
+      return NULL;
+  } else if (type == kCGEventOtherMouseUp) {
+      if (!last_down) {
+	  return NULL;
+      } else {
+	  last_down = 0;
+	  CGEventRef e = CGEventCreateCopy(event);
+	  CGEventSetType(e, kCGEventOtherMouseDown);
+	  CGEventTapPostEvent(proxy, e);
+	  CFRelease(e);
+	  return event;
+      }
   }
-  events[i] = type;
-  i = NEXT_M3(i);
-#undef PREV_M3
-#undef NEXT_M3
-
   return event;
 }
 
